@@ -1,0 +1,29 @@
+name: Release library as a PyPI wheel and sdist on tag
+
+on:
+  workflow_dispatch:
+    branches: [ master,main ]
+  push:
+    branches: [ master,main ]
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-2019, macos-10.15]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.3.1
+        env:
+            # Skip 32-bit builds, PyPy wheels on all platforms and musl
+            CIBW_SKIP: "*-win32 *-manylinux_i686 pp* *musllinux*"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
+
